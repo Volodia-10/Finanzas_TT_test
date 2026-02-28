@@ -64,6 +64,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   const user = await getAuthUser();
+  let requestIdForIdempotency: string | null = null;
 
   if (!user) {
     return NextResponse.json({ message: "No autorizado" }, { status: 401 });
@@ -78,6 +79,8 @@ export async function POST(request: NextRequest) {
     }
 
     const data = parsed.data;
+    const requestId = data.requestId.trim();
+    requestIdForIdempotency = requestId;
 
     const amount = parseCopInput(data.amountInput);
     if (!amount || amount <= 0) {
@@ -181,6 +184,7 @@ export async function POST(request: NextRequest) {
 
     const createdIncome = await prisma.income.create({
       data: {
+        requestId,
         grossAmount: amount,
         netAmount,
         semesterCode,
@@ -207,7 +211,26 @@ export async function POST(request: NextRequest) {
       }
     });
   } catch (error) {
-    if ((error as Prisma.PrismaClientKnownRequestError)?.code) {
+    const prismaError = error as Prisma.PrismaClientKnownRequestError;
+
+    if (prismaError?.code === "P2002") {
+      if (requestIdForIdempotency) {
+        const existingIncome = await prisma.income.findUnique({ where: { requestId: requestIdForIdempotency } });
+
+        if (existingIncome) {
+          return NextResponse.json({
+            message: "Ingreso ya registrado (idempotencia)",
+            item: {
+              ...existingIncome,
+              grossAmount: Number(existingIncome.grossAmount),
+              netAmount: Number(existingIncome.netAmount)
+            }
+          });
+        }
+      }
+    }
+
+    if (prismaError?.code) {
       return NextResponse.json({ message: "Error de base de datos" }, { status: 500 });
     }
 

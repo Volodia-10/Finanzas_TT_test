@@ -6,6 +6,7 @@ export const loginSchema = z.object({
 });
 
 export const createIncomeSchema = z.object({
+  requestId: z.string().min(8, "requestId inválido").max(120, "requestId inválido"),
   amountInput: z.string().min(1, "El monto es obligatorio"),
   accountCode: z.string().min(1, "Selecciona una cuenta"),
   detailCode: z.string().min(1, "Selecciona un detalle"),
@@ -31,7 +32,8 @@ export const adminUpdateIncomeSchema = z.object({
 });
 
 export const createExpenseSchema = z.object({
-  amountInput: z.string().min(1, "El monto es obligatorio"),
+  requestId: z.string().min(8, "requestId inválido").max(120, "requestId inválido"),
+  amountInput: z.string().optional().default(""),
   accountCode: z.string().min(1, "Selecciona una cuenta"),
   methodCode: z.string().min(1, "Selecciona método"),
   semesterCode: z.string().min(1, "Selecciona semestre"),
@@ -42,7 +44,18 @@ export const createExpenseSchema = z.object({
   carMotiveCode: z.string().optional().default(""),
   carReasonText: z.string().optional().default(""),
   authorizedBy: z.string().min(1, "Selecciona AUTORIZÓ"),
-  responsible: z.string().min(1, "Selecciona RESPONSABLE")
+  responsible: z.string().min(1, "Selecciona RESPONSABLE"),
+  isBulk: z.boolean().optional().default(false),
+  bulkRows: z
+    .array(
+      z.object({
+        employeeCode: z.string().min(1, "Empleado inválido"),
+        amountInput: z.string().min(1, "Monto inválido")
+      })
+    )
+    .max(300, "Máximo 300 filas por lote")
+    .optional()
+    .default([])
 });
 
 export const adminUpdateExpenseSchema = z.object({
@@ -84,6 +97,7 @@ export const expenseFilterSchema = z.object({
 });
 
 export const createTransferSchema = z.object({
+  requestId: z.string().min(8, "requestId inválido").max(120, "requestId inválido"),
   transferAtInput: z.string().min(1, "Debes registrar fecha"),
   originAccountCode: z.string().min(1, "Selecciona cuenta ORIGEN"),
   destinationAccountCode: z.string().min(1, "Selecciona cuenta DESTINO"),

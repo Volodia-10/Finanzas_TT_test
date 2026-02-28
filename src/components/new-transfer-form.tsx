@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { ArrowRight, CheckCircle2, Repeat } from "lucide-react";
 import { formatCop, formatCopInput, parseCopInput } from "@/lib/money";
+import { generateRequestId } from "@/lib/request-id";
 
 type TransferCatalogResponse = {
   accounts: {
@@ -13,6 +14,7 @@ type TransferCatalogResponse = {
 };
 
 type TransferFormState = {
+  requestId: string;
   transferAtInput: string;
   originAccountCode: string;
   destinationAccountCode: string;
@@ -32,6 +34,7 @@ function toDateTimeLocalString(date: Date): string {
 }
 
 const initialForm: TransferFormState = {
+  requestId: generateRequestId(),
   transferAtInput: toDateTimeLocalString(new Date()),
   originAccountCode: "",
   destinationAccountCode: "",
@@ -100,6 +103,7 @@ export function NewTransferForm() {
 
   const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (submitting) return;
     setFeedback(null);
 
     try {
@@ -123,6 +127,7 @@ export function NewTransferForm() {
       setFeedback({ type: "success", message: "Transferencia registrada" });
       setForm({
         ...initialForm,
+        requestId: generateRequestId(),
         transferAtInput: toDateTimeLocalString(new Date())
       });
     } catch {

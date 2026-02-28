@@ -114,6 +114,7 @@ model Income {
   id               String   @id @default(cuid())
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
+  requestId        String?  @unique
   grossAmount      Decimal  @db.Decimal(16, 2)
   netAmount        Decimal  @db.Decimal(16, 2)
   semesterCode     String
@@ -222,6 +223,7 @@ model Expense {
   id            String   @id @default(cuid())
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+  requestId     String?  @unique
   amount        Decimal  @db.Decimal(16, 2)
   realAmount    Decimal  @db.Decimal(16, 2)
   accountCode   String
@@ -253,6 +255,7 @@ model InternalTransfer {
   id                     String   @id @default(cuid())
   createdAt              DateTime @default(now())
   updatedAt              DateTime @updatedAt
+  requestId              String?  @unique
   transferAt             DateTime
   originAccountCode      String
   destinationAccountCode String

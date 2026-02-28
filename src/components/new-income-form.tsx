@@ -6,6 +6,7 @@ import { ArrowRight, CheckCircle2, CircleDollarSign } from "lucide-react";
 import { INTEREST_DETAIL_CODE, INTEREST_FORCED_VALUES, WOMPI_DETAIL_CODE } from "@/lib/constants";
 import { calculateWompiNet, shouldRequestWompiMethod, type WompiConfigRates } from "@/lib/income-rules";
 import { formatCop, formatCopInput, parseCopInput } from "@/lib/money";
+import { generateRequestId } from "@/lib/request-id";
 
 type CatalogResponse = {
   accounts: { code: string; label: string }[];
@@ -17,6 +18,7 @@ type CatalogResponse = {
 };
 
 type FormState = {
+  requestId: string;
   amountInput: string;
   semesterCode: string;
   accountCode: string;
@@ -28,6 +30,7 @@ type FormState = {
 };
 
 const initialForm: FormState = {
+  requestId: generateRequestId(),
   amountInput: "",
   semesterCode: "",
   accountCode: "",
@@ -106,6 +109,7 @@ export function NewIncomeForm() {
 
   const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (submitting) return;
     setFeedback(null);
 
     try {
@@ -132,7 +136,10 @@ export function NewIncomeForm() {
       }
 
       setFeedback({ type: "success", message: "Ingreso guardado correctamente" });
-      setForm(initialForm);
+      setForm({
+        ...initialForm,
+        requestId: generateRequestId()
+      });
     } catch {
       setFeedback({ type: "error", message: "Error de red. Intenta de nuevo." });
     } finally {

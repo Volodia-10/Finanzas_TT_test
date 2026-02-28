@@ -69,6 +69,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   const user = await getAuthUser();
+  let requestIdForIdempotency: string | null = null;
 
   if (!user) {
     return NextResponse.json({ message: "No autorizado" }, { status: 401 });
@@ -81,6 +82,9 @@ export async function POST(request: NextRequest) {
     if (!parsed.success) {
       return NextResponse.json({ message: parsed.error.issues[0]?.message ?? "Datos inválidos" }, { status: 400 });
     }
+
+    const requestId = parsed.data.requestId.trim();
+    requestIdForIdempotency = requestId;
 
     const transferAt = parseTransferDate(parsed.data.transferAtInput);
     if (!transferAt) {
@@ -122,6 +126,7 @@ export async function POST(request: NextRequest) {
 
     const created = await prisma.internalTransfer.create({
       data: {
+        requestId,
         transferAt,
         originAccountCode,
         destinationAccountCode,
@@ -141,7 +146,28 @@ export async function POST(request: NextRequest) {
       }
     });
   } catch (error) {
-    if ((error as Prisma.PrismaClientKnownRequestError)?.code) {
+    const prismaError = error as Prisma.PrismaClientKnownRequestError;
+
+    if (prismaError?.code === "P2002") {
+      if (requestIdForIdempotency) {
+        const existingTransfer = await prisma.internalTransfer.findUnique({
+          where: { requestId: requestIdForIdempotency }
+        });
+
+        if (existingTransfer) {
+          return NextResponse.json({
+            message: "Transferencia ya registrada (idempotencia)",
+            item: {
+              ...existingTransfer,
+              amount: Number(existingTransfer.amount),
+              fee: Number(existingTransfer.fee)
+            }
+          });
+        }
+      }
+    }
+
+    if (prismaError?.code) {
       return NextResponse.json({ message: "Error de base de datos" }, { status: 500 });
     }
 

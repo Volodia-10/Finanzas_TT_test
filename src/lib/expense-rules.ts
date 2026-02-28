@@ -28,6 +28,13 @@ export const EXPENSE_MONTH_REQUIRED_CATEGORIES = new Set([
   "PRIMAS"
 ]);
 
+export const EXPENSE_BULK_ALLOWED_CATEGORIES = new Set([
+  "PAGO_NÓMINA",
+  "PRIMAS",
+  "ITAÚ-APTOS",
+  "MERCADO"
+]);
+
 const EMPLOYEE_REASON_CATEGORIES = new Set(["ADELANTO", "PAGO_NÓMINA", "VIATICOS", "PRIMAS"]);
 const NO_REASON_CATEGORIES = new Set(["SEGURIDAD_SOCIAL", "CESANTIAS"]);
 const CAR_CATEGORY = "CARROS";
@@ -82,6 +89,10 @@ export function getExpenseReasonMode(categoryCode: string): ExpenseReasonMode {
 
 export function categoryRequiresMonth(categoryCode: string): boolean {
   return EXPENSE_MONTH_REQUIRED_CATEGORIES.has(normalizeCode(categoryCode));
+}
+
+export function categoryAllowsBulk(categoryCode: string): boolean {
+  return EXPENSE_BULK_ALLOWED_CATEGORIES.has(normalizeCode(categoryCode));
 }
 
 export function getCurrentSystemYear(): number {
