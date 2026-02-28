@@ -83,11 +83,15 @@ npm run dev
 ## Credenciales iniciales (seed)
 - Admin: `admin@proyectofinanzas.local`
 - Operador: `operador@proyectofinanzas.local`
-- Password por defecto: `Admin123*`
+- Password por defecto:
+  - Admin: `Admin123*`
+  - Operador: `Admin123*` (si no defines `SEED_OPERATOR_PASSWORD`)
 
 Puedes cambiar estos valores con:
 - `SEED_ADMIN_EMAIL`
 - `SEED_ADMIN_PASSWORD`
+- `SEED_OPERATOR_EMAIL`
+- `SEED_OPERATOR_PASSWORD`
 
 ## Rutas principales
 - `/login`

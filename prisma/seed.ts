@@ -10,40 +10,44 @@ type SeedItem = {
 };
 
 async function upsertUser() {
-  const email = process.env.SEED_ADMIN_EMAIL ?? "admin@proyectofinanzas.local";
-  const password = process.env.SEED_ADMIN_PASSWORD ?? "Admin123*";
-  const passwordHash = await bcrypt.hash(password, 10);
+  const adminEmail = process.env.SEED_ADMIN_EMAIL ?? "admin@proyectofinanzas.local";
+  const adminPassword = process.env.SEED_ADMIN_PASSWORD ?? "Admin123*";
+  const operatorEmail = process.env.SEED_OPERATOR_EMAIL ?? "operador@proyectofinanzas.local";
+  const operatorPassword = process.env.SEED_OPERATOR_PASSWORD ?? adminPassword;
+
+  const adminPasswordHash = await bcrypt.hash(adminPassword, 10);
+  const operatorPasswordHash = await bcrypt.hash(operatorPassword, 10);
 
   await prisma.user.upsert({
-    where: { email },
+    where: { email: adminEmail },
     update: {
       name: "Administrador",
       role: UserRole.ADMIN,
-      passwordHash,
+      passwordHash: adminPasswordHash,
       isActive: true
     },
     create: {
-      email,
+      email: adminEmail,
       name: "Administrador",
       role: UserRole.ADMIN,
-      passwordHash,
+      passwordHash: adminPasswordHash,
       isActive: true
     }
   });
 
   await prisma.user.upsert({
-    where: { email: "operador@proyectofinanzas.local" },
+    where: { email: operatorEmail },
     update: {
       name: "Operador",
       role: UserRole.OPERATOR,
-      passwordHash,
+      passwordHash: operatorPasswordHash,
       isActive: true
     },
     create: {
-      email: "operador@proyectofinanzas.local",
+      email: operatorEmail,
       name: "Operador",
       role: UserRole.OPERATOR,
-      passwordHash,
+      passwordHash: operatorPasswordHash,
       isActive: true
     }
   });
