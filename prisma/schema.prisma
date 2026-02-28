@@ -1,0 +1,281 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  ADMIN
+  OPERATOR
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String
+  passwordHash String
+  role         UserRole @default(OPERATOR)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  incomes Income[]
+  expenses Expense[]
+  internalTransfers InternalTransfer[]
+}
+
+model Account {
+  id        String   @id @default(cuid())
+  code      String   @unique
+  name      String
+  isActive  Boolean  @default(true)
+  isSystem  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  detailMappings AccountDetailMap[]
+}
+
+model Semester {
+  id           String   @id @default(cuid())
+  code         String   @unique
+  label        String
+  isActive     Boolean  @default(true)
+  isSystem     Boolean  @default(false)
+  isSelectable Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Line {
+  id           String   @id @default(cuid())
+  code         String   @unique
+  label        String
+  isActive     Boolean  @default(true)
+  isSystem     Boolean  @default(false)
+  isSelectable Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model WompiMethod {
+  id        String   @id @default(cuid())
+  code      String   @unique
+  label     String
+  isActive  Boolean  @default(true)
+  isSystem  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model WompiConfig {
+  id          String   @id @default(cuid())
+  code        String   @unique
+  baseFeeRate Decimal  @db.Decimal(10, 6)
+  fixedFee    Decimal  @db.Decimal(16, 2)
+  ivaRate     Decimal  @db.Decimal(10, 6)
+  tcExtraRate Decimal  @db.Decimal(10, 6)
+  isActive    Boolean  @default(true)
+  isSystem    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model DetailOption {
+  id        String   @id @default(cuid())
+  code      String   @unique
+  label     String
+  isActive  Boolean  @default(true)
+  isSystem  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  accountMappings AccountDetailMap[]
+}
+
+model AccountDetailMap {
+  id             String   @id @default(cuid())
+  accountId      String
+  detailOptionId String
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  account      Account      @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  detailOption DetailOption @relation(fields: [detailOptionId], references: [id], onDelete: Cascade)
+
+  @@unique([accountId, detailOptionId])
+}
+
+model Income {
+  id               String   @id @default(cuid())
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  grossAmount      Decimal  @db.Decimal(16, 2)
+  netAmount        Decimal  @db.Decimal(16, 2)
+  semesterCode     String
+  accountCode      String
+  detailCode       String
+  wompiMethodCode  String?
+  lineCode         String
+  userTag          String
+  extra            String   @default("-")
+  isWompi          Boolean  @default(false)
+  commissionBase   Decimal? @db.Decimal(16, 2)
+  commissionIva    Decimal? @db.Decimal(16, 2)
+  commissionTcRate Decimal? @db.Decimal(16, 2)
+  createdById      String
+
+  createdBy User @relation(fields: [createdById], references: [id], onDelete: Restrict)
+
+  @@index([createdAt])
+  @@index([accountCode])
+  @@index([semesterCode])
+  @@index([lineCode])
+  @@index([userTag])
+}
+
+model ExpenseMethod {
+  id        String   @id @default(cuid())
+  code      String   @unique
+  label     String
+  isActive  Boolean  @default(true)
+  isSystem  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ExpenseCategory {
+  id        String   @id @default(cuid())
+  code      String   @unique
+  label     String
+  isActive  Boolean  @default(true)
+  isSystem  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ExpenseMonth {
+  id        String   @id @default(cuid())
+  code      String   @unique
+  label     String
+  isActive  Boolean  @default(true)
+  isSystem  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ExpenseEmployee {
+  id        String   @id @default(cuid())
+  code      String   @unique
+  label     String
+  isActive  Boolean  @default(true)
+  isSystem  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ExpenseAuthorizer {
+  id        String   @id @default(cuid())
+  code      String   @unique
+  label     String
+  isActive  Boolean  @default(true)
+  isSystem  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ExpenseResponsible {
+  id        String   @id @default(cuid())
+  code      String   @unique
+  label     String
+  isActive  Boolean  @default(true)
+  isSystem  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model CarName {
+  id        String   @id @default(cuid())
+  code      String   @unique
+  label     String
+  isActive  Boolean  @default(true)
+  isSystem  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model CarMotive {
+  id        String   @id @default(cuid())
+  code      String   @unique
+  label     String
+  isActive  Boolean  @default(true)
+  isSystem  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Expense {
+  id            String   @id @default(cuid())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  amount        Decimal  @db.Decimal(16, 2)
+  realAmount    Decimal  @db.Decimal(16, 2)
+  accountCode   String
+  methodCode    String
+  semesterCode  String
+  categoryCode  String
+  reason        String
+  reasonBase    String?
+  monthCode     String?
+  carNameCode   String?
+  carMotiveCode String?
+  carReasonText String?
+  authorizedBy  String
+  responsible   String
+  createdById   String
+
+  createdBy User @relation(fields: [createdById], references: [id], onDelete: Restrict)
+
+  @@index([createdAt])
+  @@index([accountCode])
+  @@index([methodCode])
+  @@index([semesterCode])
+  @@index([categoryCode])
+  @@index([authorizedBy])
+  @@index([responsible])
+}
+
+model InternalTransfer {
+  id                     String   @id @default(cuid())
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+  transferAt             DateTime
+  originAccountCode      String
+  destinationAccountCode String
+  amount                 Decimal  @db.Decimal(16, 2)
+  fee                    Decimal  @db.Decimal(16, 2)
+  note                   String?
+  createdById            String
+
+  createdBy User @relation(fields: [createdById], references: [id], onDelete: Restrict)
+
+  @@index([transferAt])
+  @@index([originAccountCode])
+  @@index([destinationAccountCode])
+}
+
+model AccountBalanceControl {
+  id             String   @id @default(cuid())
+  accountCode    String   @unique
+  openingBalance Decimal  @default(0) @db.Decimal(16, 2)
+  openingBalanceSetAt DateTime?
+  actualBalance  Decimal? @db.Decimal(16, 2)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([accountCode])
+}
